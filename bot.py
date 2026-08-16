@@ -40,19 +40,19 @@ def main_menu():
     keyboard = [
         [
             InlineKeyboardButton(
-                "⚽ مباريات اليوم",
+                "⚽ Today's Matches",
                 callback_data="today_matches",
             )
         ],
         [
             InlineKeyboardButton(
-                "🏆 تحدي اليوم",
+                "🏆 Daily Challenge",
                 callback_data="daily_challenge",
             )
         ],
         [
             InlineKeyboardButton(
-                "📊 الإحصائيات",
+                "📊 My Stats",
                 callback_data="stats",
             )
         ],
@@ -67,10 +67,11 @@ def main_menu():
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "⚽ <b>Match Zone</b>\n\n"
-        "مرحباً بك في Match Zone 👋\n\n"
-        "تابع مباريات اليوم واختبر معلوماتك الرياضية.\n\n"
-        "اختر من القائمة:"
+        "⚽ <b>Welcome to Match Zone!</b>\n\n"
+        "Your daily football companion 👋\n\n"
+        "Follow today's matches, test your football knowledge, "
+        "and enjoy interactive challenges.\n\n"
+        "Choose an option below:"
     )
 
     await update.message.reply_text(
@@ -115,9 +116,9 @@ def format_matches(data):
     matches = data.get("response", [])
 
     if not matches:
-        return "⚽ لا توجد مباريات متاحة اليوم."
+        return "⚽ There are no matches available today."
 
-    text = "⚽ <b>مباريات اليوم</b>\n\n"
+    text = "⚽ <b>Today's Matches</b>\n\n"
 
     for match in matches[:20]:
 
@@ -143,15 +144,15 @@ def format_matches(data):
         if status == "NS":
             status_text = f"🕐 {match_time}"
         elif status in ["1H", "2H", "HT", "ET", "P"]:
-            status_text = "🔴 مباشر"
+            status_text = "🔴 LIVE"
         elif status in ["FT", "AET", "PEN"]:
-            status_text = "✅ انتهت"
+            status_text = "✅ Finished"
         else:
             status_text = status
 
         text += (
             f"🏆 <b>{league}</b>\n"
-            f"⚽ {home} × {away}\n"
+            f"⚽ {home} vs {away}\n"
             f"{status_text}\n\n"
         )
 
@@ -171,14 +172,14 @@ async def button_handler(
 
     await query.answer()
 
-    # -------------------------
+    # =========================
     # Today's Matches
-    # -------------------------
+    # =========================
 
     if query.data == "today_matches":
 
         await query.edit_message_text(
-            "⏳ جاري تحميل مباريات اليوم..."
+            "⏳ Loading today's matches..."
         )
 
         try:
@@ -190,13 +191,13 @@ async def button_handler(
             keyboard = [
                 [
                     InlineKeyboardButton(
-                        "🔄 تحديث",
+                        "🔄 Refresh",
                         callback_data="today_matches",
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        "🔙 القائمة الرئيسية",
+                        "🔙 Main Menu",
                         callback_data="home",
                     )
                 ],
@@ -213,8 +214,8 @@ async def button_handler(
             logger.error("API error: %s", error)
 
             await query.edit_message_text(
-                "❌ تعذر تحميل المباريات حالياً.\n"
-                "حاول مرة أخرى بعد قليل."
+                "❌ Unable to load matches right now.\n"
+                "Please try again later."
             )
 
         except Exception as error:
@@ -222,12 +223,13 @@ async def button_handler(
             logger.exception("Unexpected error: %s", error)
 
             await query.edit_message_text(
-                "❌ حدث خطأ غير متوقع."
+                "❌ Something went wrong.\n"
+                "Please try again later."
             )
 
-    # -------------------------
+    # =========================
     # Daily Challenge
-    # -------------------------
+    # =========================
 
     elif query.data == "daily_challenge":
 
@@ -252,34 +254,35 @@ async def button_handler(
             ],
             [
                 InlineKeyboardButton(
-                    "🔙 الرئيسية",
+                    "🔙 Main Menu",
                     callback_data="home",
                 )
             ],
         ]
 
         await query.edit_message_text(
-            "🏆 <b>تحدي اليوم</b>\n\n"
-            "من هو الهداف التاريخي لدوري أبطال أوروبا؟",
+            "🏆 <b>Daily Challenge</b>\n\n"
+            "Who is the all-time top scorer in UEFA Champions League history?\n\n"
+            "Choose your answer:",
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
 
-    # -------------------------
+    # =========================
     # Correct Answer
-    # -------------------------
+    # =========================
 
     elif query.data == "answer_correct":
 
         await query.edit_message_text(
-            "🎉 <b>إجابة صحيحة!</b>\n\n"
-            "🔥 أحسنت! حصلت على نقطة.",
+            "🎉 <b>Correct Answer!</b>\n\n"
+            "🔥 Great job! You earned 1 point.",
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            "🔙 القائمة الرئيسية",
+                            "🔙 Main Menu",
                             callback_data="home",
                         )
                     ]
@@ -287,44 +290,21 @@ async def button_handler(
             ),
         )
 
-    # -------------------------
+    # =========================
     # Wrong Answer
-    # -------------------------
+    # =========================
 
     elif query.data == "answer_wrong":
 
         await query.edit_message_text(
-            "❌ إجابة غير صحيحة.\n\n"
-            "حاول في تحدي اليوم القادم! ⚽",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            "🔙 القائمة الرئيسية",
-                            callback_data="home",
-                        )
-                    ]
-                ]
-            ),
-        )
-
-    # -------------------------
-    # Stats
-    # -------------------------
-
-    elif query.data == "stats":
-
-        await query.edit_message_text(
-            "📊 <b>إحصائياتك</b>\n\n"
-            "🏆 النقاط: 0\n"
-            "🔥 سلسلة الأيام: 0\n"
-            "🎯 الإجابات الصحيحة: 0",
+            "❌ <b>Wrong Answer!</b>\n\n"
+            "Better luck next time! ⚽",
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
                         InlineKeyboardButton(
-                            "🔙 القائمة الرئيسية",
+                            "🔙 Main Menu",
                             callback_data="home",
                         )
                     ]
@@ -332,15 +312,40 @@ async def button_handler(
             ),
         )
 
-    # -------------------------
+    # =========================
+    # Stats
+    # =========================
+
+    elif query.data == "stats":
+
+        await query.edit_message_text(
+            "📊 <b>Your Stats</b>\n\n"
+            "🏆 Points: 0\n"
+            "🔥 Daily Streak: 0\n"
+            "🎯 Correct Answers: 0",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "🔙 Main Menu",
+                            callback_data="home",
+                        )
+                    ]
+                ]
+            ),
+        )
+
+    # =========================
     # Home
-    # -------------------------
+    # =========================
 
     elif query.data == "home":
 
         await query.edit_message_text(
             "⚽ <b>Match Zone</b>\n\n"
-            "اختر من القائمة:",
+            "Welcome back! 👋\n\n"
+            "Choose an option below:",
             parse_mode="HTML",
             reply_markup=main_menu(),
         )
